@@ -12,6 +12,7 @@ fn main() -> anyhow::Result<()> {
     let i = parse.parse(&mut &i).unwrap();
 
     println!("part 1: {}", part_1(&i));
+    println!("part 2: {}", part_2(&i));
     Ok(())
 }
 
@@ -38,6 +39,37 @@ fn part_1(input: &Vec<i32>) -> u32 {
     count
 }
 
+fn part_2(input: &Vec<i32>) -> u32 {
+    let mut cur = 50i32;
+    let mut count = 0;
+
+    for mut i in input.iter().cloned() {
+        while i < 0 {
+            i += 1;
+            cur += 1;
+            if cur == 100 {
+                cur = 0
+            }
+            if cur == 0 {
+                count += 1
+            }
+        }
+
+        while i > 0 {
+            i -= 1;
+            cur -= 1;
+            if cur == -1 {
+                cur = 99
+            }
+            if cur == 0 {
+                count += 1
+            }
+        }
+    }
+
+    count
+}
+
 fn parse(input: &mut &str) -> winnow::Result<Vec<i32>> {
     repeat(0.., (parse_line, opt(newline)).map(|l| l.0)).parse_next(input)
 }
@@ -57,7 +89,7 @@ fn parse_line(s: &mut &str) -> winnow::Result<i32> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{parse, part_1};
+    use crate::{parse, part_1, part_2};
     use winnow::Parser;
 
     const INPUT: &str = concat!(
@@ -75,5 +107,10 @@ mod tests {
     #[test]
     fn test_part_1() {
         assert_eq!(part_1(&parse.parse(INPUT).unwrap()), 3);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(&parse.parse(INPUT).unwrap()), 6);
     }
 }
