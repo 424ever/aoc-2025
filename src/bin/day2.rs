@@ -1,4 +1,5 @@
 use anyhow as a;
+use itertools::Itertools;
 use winnow::{
     self as w, Parser,
     ascii::{dec_uint, newline},
@@ -12,11 +13,15 @@ fn main() -> a::Result<()> {
     let i = parse.parse(&mut &i).unwrap();
 
     println!("part 1: {}", part_1(&i));
+    println!("part 2: {}", part_2(&i));
     Ok(())
 }
 
 fn part_1(i: &Vec<RangeInclusive<u64>>) -> u64 {
     i.iter().cloned().flatten().filter(repeated_twice).sum()
+}
+fn part_2(i: &Vec<RangeInclusive<u64>>) -> u64 {
+    i.iter().cloned().flatten().filter(repeated_any).sum()
 }
 
 fn repeated_twice(n: &u64) -> bool {
@@ -29,6 +34,23 @@ fn repeated_twice(n: &u64) -> bool {
     let mid = s.len() >> 1;
 
     s[0..mid] == s[mid..]
+}
+
+fn repeated_any(n: &u64) -> bool {
+    let s = format!("{}", n);
+
+    fact(s.len())
+        .map(|f| {
+            (s.chars().chunks(f))
+                .into_iter()
+                .map(|c| c.collect::<String>())
+                .all_equal()
+        })
+        .any(|b| b)
+}
+
+fn fact(n: usize) -> impl Iterator<Item = usize> {
+    (1..n).filter(move |i| n % i == 0).fuse()
 }
 
 fn parse(s: &mut &str) -> w::Result<Vec<RangeInclusive<u64>>> {
@@ -77,5 +99,21 @@ mod tests {
     fn test_part_1() {
         let i = parse.parse(INPUT).unwrap();
         assert_eq!(part_1(&i), 1227775554);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let i = parse.parse(INPUT).unwrap();
+        assert_eq!(part_2(&i), 4174379265);
+    }
+
+    #[test]
+    fn test_fact() {
+        assert_eq!(fact(1).collect::<Vec<_>>(), vec![]);
+        assert_eq!(fact(2).collect::<Vec<_>>(), vec![1]);
+        assert_eq!(fact(3).collect::<Vec<_>>(), vec![1]);
+        assert_eq!(fact(4).collect::<Vec<_>>(), vec![1, 2]);
+        assert_eq!(fact(5).collect::<Vec<_>>(), vec![1]);
+        assert_eq!(fact(6).collect::<Vec<_>>(), vec![1, 2, 3]);
     }
 }
