@@ -7,13 +7,12 @@ use winnow::{
     token::{one_of, take_while},
 };
 
-fn main() -> anyhow::Result<()> {
-    let i = fs::read_to_string("input/day1")?;
+fn main() {
+    let i = fs::read_to_string("input/day1").unwrap();
     let i = parse.parse(&mut &i).unwrap();
 
     println!("part 1: {}", part_1(&i));
     println!("part 2: {}", part_2(&i));
-    Ok(())
 }
 
 fn part_1(input: &Vec<i32>) -> u32 {

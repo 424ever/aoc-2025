@@ -1,4 +1,3 @@
-use anyhow as a;
 use itertools::Itertools;
 use winnow::{
     self as w, Parser,
@@ -8,13 +7,12 @@ use winnow::{
 
 use std::{fs, ops::RangeInclusive};
 
-fn main() -> a::Result<()> {
-    let i = fs::read_to_string("input/day2")?;
+fn main() {
+    let i = fs::read_to_string("input/day2").unwrap();
     let i = parse.parse(&mut &i).unwrap();
 
     println!("part 1: {}", part_1(&i));
     println!("part 2: {}", part_2(&i));
-    Ok(())
 }
 
 fn part_1(i: &Vec<RangeInclusive<u64>>) -> u64 {
