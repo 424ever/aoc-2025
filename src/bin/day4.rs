@@ -7,14 +7,31 @@ fn main() {
     let i = parse_input(&i);
 
     println!("part 1: {}", part_1(&i));
+    println!("part 2: {}", part_2(&i));
 }
 
 fn part_1(rolls: &HashSet<Pos>) -> usize {
     rolls
         .iter()
-        .map(|r| adjacent(r, rolls).count())
-        .filter(|&n| n < 4)
+        .filter(|r| adjacent(r, rolls).count() < 4)
         .count()
+}
+
+fn part_2(rolls: &HashSet<Pos>) -> usize {
+    let mut rolls = rolls.clone();
+    let mut sum = 0;
+
+    loop {
+        let c = rolls.clone();
+        let removed = rolls.extract_if(|r| adjacent(r, &c).count() < 4).count();
+        sum += removed;
+
+        if removed == 0 {
+            break;
+        }
+    }
+
+    sum
 }
 
 fn adjacent(r: &Pos, all: &HashSet<Pos>) -> impl Iterator<Item = Pos> {
@@ -80,5 +97,11 @@ mod tests {
     fn test_part_1() {
         let i = parse_input(INPUT);
         assert_eq!(part_1(&i), 13);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let i = parse_input(INPUT);
+        assert_eq!(part_2(&i), 43);
     }
 }
