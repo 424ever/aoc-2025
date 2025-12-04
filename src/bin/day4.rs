@@ -19,22 +19,41 @@ fn part_1(rolls: &HashSet<Pos>) -> usize {
 
 fn part_2(rolls: &HashSet<Pos>) -> usize {
     let mut rolls = rolls.clone();
+    let mut to_check = rolls.clone();
     let mut sum = 0;
 
     loop {
         let c = rolls.clone();
-        let removed = rolls.extract_if(|r| adjacent(r, &c).count() < 4).count();
-        sum += removed;
+        let removed = to_check
+            .iter()
+            .map(|r| (*r, adjacent(r, &c).collect::<Vec<_>>()))
+            .filter(|(_, a)| a.len() < 4)
+            .inspect(|(r, _)| {
+                rolls.remove(r);
+            })
+            .collect::<Vec<_>>();
 
-        if removed == 0 {
+        sum += removed.len();
+
+        if removed.len() == 0 {
             break;
         }
+
+        to_check = removed
+            .iter()
+            .map(|r| r.1.iter())
+            .flatten()
+            .copied()
+            .collect();
+        removed.iter().for_each(|(r, _)| {
+            to_check.remove(r);
+        });
     }
 
     sum
 }
 
-fn adjacent(r: &Pos, all: &HashSet<Pos>) -> impl Iterator<Item = Pos> {
+fn adjacent(r: &Pos, all: &HashSet<Pos>) -> impl Iterator<Item = Pos> + Clone {
     (-1..=1)
         .map(|xo| (-1..=1).map(move |yo| (xo, yo)))
         .flatten()
