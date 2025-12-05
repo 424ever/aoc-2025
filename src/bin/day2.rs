@@ -9,16 +9,16 @@ use std::{fs, ops::RangeInclusive};
 
 fn main() {
     let i = fs::read_to_string("input/day2").unwrap();
-    let i = parse.parse(&mut &i).unwrap();
+    let i = parse.parse(&i).unwrap();
 
     println!("part 1: {}", part_1(&i));
     println!("part 2: {}", part_2(&i));
 }
 
-fn part_1(i: &Vec<RangeInclusive<u64>>) -> u64 {
+fn part_1(i: &[RangeInclusive<u64>]) -> u64 {
     i.iter().cloned().flatten().filter(repeated_twice).sum()
 }
-fn part_2(i: &Vec<RangeInclusive<u64>>) -> u64 {
+fn part_2(i: &[RangeInclusive<u64>]) -> u64 {
     i.iter().cloned().flatten().filter(repeated_any).sum()
 }
 
@@ -37,18 +37,16 @@ fn repeated_twice(n: &u64) -> bool {
 fn repeated_any(n: &u64) -> bool {
     let s = format!("{}", n);
 
-    fact(s.len())
-        .map(|f| {
-            (s.chars().chunks(f))
-                .into_iter()
-                .map(|c| c.collect::<String>())
-                .all_equal()
-        })
-        .any(|b| b)
+    fact(s.len()).any(|f| {
+        (s.chars().chunks(f))
+            .into_iter()
+            .map(|c| c.collect::<String>())
+            .all_equal()
+    })
 }
 
 fn fact(n: usize) -> impl Iterator<Item = usize> {
-    (1..n).filter(move |i| n % i == 0).fuse()
+    (1..n).filter(move |i| n.is_multiple_of(*i)).fuse()
 }
 
 fn parse(s: &mut &str) -> w::Result<Vec<RangeInclusive<u64>>> {

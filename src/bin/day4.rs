@@ -35,14 +35,13 @@ fn part_2(rolls: &HashSet<Pos>) -> usize {
 
         sum += removed.len();
 
-        if removed.len() == 0 {
+        if removed.is_empty() {
             break;
         }
 
         to_check = removed
             .iter()
-            .map(|r| r.1.iter())
-            .flatten()
+            .flat_map(|r| r.1.iter())
             .copied()
             .collect();
         removed.iter().for_each(|(r, _)| {
@@ -55,8 +54,7 @@ fn part_2(rolls: &HashSet<Pos>) -> usize {
 
 fn adjacent(r: &Pos, all: &HashSet<Pos>) -> impl Iterator<Item = Pos> + Clone {
     (-1..=1)
-        .map(|xo| (-1..=1).map(move |yo| (xo, yo)))
-        .flatten()
+        .flat_map(|xo| (-1..=1).map(move |yo| (xo, yo)))
         .filter(|&(xo, yo)| xo != 0 || yo != 0)
         .filter_map(|(xo, yo)| Some((r.0.checked_add_signed(xo)?, r.1.checked_add_signed(yo)?)))
         .filter(|p| all.contains(p))

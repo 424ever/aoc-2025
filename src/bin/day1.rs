@@ -9,7 +9,7 @@ use winnow::{
 
 fn main() {
     let i = fs::read_to_string("input/day1").unwrap();
-    let i = parse.parse(&mut &i).unwrap();
+    let i = parse.parse(&i).unwrap();
 
     println!("part 1: {}", part_1(&i));
     println!("part 2: {}", part_2(&i));
@@ -23,11 +23,11 @@ fn part_1(input: &Vec<i32>) -> u32 {
         cur += i;
 
         while cur < 0 {
-            cur = 100 + cur
+            cur += 100
         }
 
         while cur > 99 {
-            cur = cur - 100
+            cur -= 100
         }
 
         if cur == 0 {
@@ -38,7 +38,7 @@ fn part_1(input: &Vec<i32>) -> u32 {
     count
 }
 
-fn part_2(input: &Vec<i32>) -> u32 {
+fn part_2(input: &[i32]) -> u32 {
     let mut cur = 50i32;
     let mut count = 0;
 

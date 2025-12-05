@@ -9,17 +9,17 @@ use winnow::{
 
 fn main() {
     let i = fs::read_to_string("input/day3").unwrap();
-    let i = parse.parse(&mut &i).unwrap();
+    let i = parse.parse(&i).unwrap();
 
     println!("part 1: {}", joltages(&i, 2).sum::<u64>());
     println!("part 2: {}", joltages(&i, 12).sum::<u64>());
 }
 
-fn joltages(i: &Vec<Vec<u8>>, digits: usize) -> impl Iterator<Item = u64> {
+fn joltages(i: &[Vec<u8>], digits: usize) -> impl Iterator<Item = u64> {
     i.iter().map(move |v| biggest_joltage(v, digits))
 }
 
-fn biggest_joltage(v: &Vec<u8>, dig: usize) -> u64 {
+fn biggest_joltage(v: &[u8], dig: usize) -> u64 {
     let mut digits = vec![0u8; dig];
     let mut lasthi = None;
 
@@ -28,7 +28,7 @@ fn biggest_joltage(v: &Vec<u8>, dig: usize) -> u64 {
         let to = v.len() - n;
         let m = v[from..to].iter().max().unwrap();
         let maxidx = v[from..].iter().position(|e| e == m).unwrap() + from;
-        digits.push(v[usize::try_from(maxidx).unwrap()]);
+        digits.push(v[maxidx]);
         lasthi = Some(maxidx);
     }
 
