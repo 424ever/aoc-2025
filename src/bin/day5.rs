@@ -1,4 +1,5 @@
-use std::{fs::read_to_string, ops::RangeInclusive};
+use std::fs::read_to_string;
+use std::ops::RangeInclusive;
 
 use winnow::{
     Parser, Result,
@@ -6,9 +7,11 @@ use winnow::{
     combinator::{opt, repeat, separated_pair, seq, terminated},
 };
 
+type Range = RangeInclusive<u64>;
+
 #[derive(Debug, PartialEq, Eq)]
 struct Input {
-    fresh_ranges: Vec<RangeInclusive<u64>>,
+    fresh_ranges: Vec<Range>,
     available: Vec<u64>,
 }
 
@@ -17,6 +20,7 @@ fn main() {
     let i = parse.parse(&i).unwrap();
 
     println!("part 1: {}", part_1(&i));
+    println!("part 2: {}", part_2(&i));
 }
 
 fn part_1(i: &Input) -> usize {
@@ -26,23 +30,48 @@ fn part_1(i: &Input) -> usize {
         .count()
 }
 
+fn part_2(i: &Input) -> usize {
+    i.fresh_ranges.iter().map(|r| r.clone().count()).sum()
+}
+
+fn reduce_ranges(v: Vec<Range>) -> Vec<Range> {
+    let mut n = v.clone();
+    let mut i = 0;
+
+    n.sort_by(|a, b| a.start().cmp(b.start()));
+
+    while i < n.len() {
+        let mut cur = &n[i];
+        while let Some(next) = n.get(i + 1)
+            && next.start() <= cur.end()
+        {
+            n[i] = *cur.start()..=*next.end().max(cur.end());
+            n.remove(i + 1);
+            cur = &n[i];
+        }
+        i += 1
+    }
+
+    n
+}
+
 fn parse(i: &mut &str) -> Result<Input> {
     seq! {Input {
-        fresh_ranges: fresh_ranges,
+        fresh_ranges: fresh_ranges.map(reduce_ranges),
         _: '\n',
         available: available
     }}
     .parse_next(i)
 }
 
-fn fresh_ranges(i: &mut &str) -> Result<Vec<RangeInclusive<u64>>> {
+fn fresh_ranges(i: &mut &str) -> Result<Vec<Range>> {
     repeat(
         1..,
         terminated(
             separated_pair(dec_uint::<_, u64, _>, '-', dec_uint::<_, u64, _>),
             line_ending,
         )
-        .map(|r| RangeInclusive::new(r.0, r.1)),
+        .map(|r| Range::new(r.0, r.1)),
     )
     .parse_next(i)
 }
@@ -66,14 +95,27 @@ mod tests {
         assert_eq!(
             parse.parse(INPUT),
             Ok(Input {
-                fresh_ranges: vec![3..=5, 10..=14, 16..=20, 12..=18],
+                fresh_ranges: vec![3..=5, 10..=20],
                 available: vec![1, 5, 8, 11, 17, 32],
             })
         );
     }
 
     #[test]
+    fn test_reduce() {
+        assert_eq!(
+            reduce_ranges(vec![154..=33, 204..=209, 153..=90, 132..=84, 10..=246]),
+            vec![10..=246]
+        );
+    }
+
+    #[test]
     fn test_part_1() {
         assert_eq!(part_1(&parse.parse(INPUT).unwrap()), 3);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(&parse.parse(INPUT).unwrap()), 14);
     }
 }
