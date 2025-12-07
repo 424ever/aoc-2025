@@ -90,9 +90,8 @@ fn parse_2(i: &str) -> Input {
                     .filter_map(|c| c.to_digit(10).map(u64::from))
                     .fold(0, |acc, x| acc * 10 + x)
             }),
-            g2.map(|c| c.last().unwrap())
-                .filter(|c| !c.is_space())
-                .next()
+            g2.map(|mut c| c.next_back().unwrap())
+                .find(|c| !c.is_space())
                 .unwrap(),
         )
     });
