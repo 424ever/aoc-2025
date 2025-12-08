@@ -26,6 +26,7 @@ fn main() {
     let i = parse.parse(&i).unwrap();
 
     println!("part 1: {}", part_1(&i, 1000));
+    println!("part 2: {}", part_2(&i));
 }
 
 fn part_1(i: &[Pos], limit: usize) -> usize {
@@ -44,6 +45,20 @@ fn part_1(i: &[Pos], limit: usize) -> usize {
         .sorted_by(|x1, x2| x1.cmp(x2).reverse())
         .take(3)
         .product()
+}
+
+fn part_2(i: &[Pos]) -> u64 {
+    let mut circuits = i.iter().map(|p| (*p, CircuitId::new())).collect();
+
+    let last_conn = closest_pairs(i)
+        .take_while_inclusive(|(p1, p2)| {
+            connect(p1, p2, &mut circuits);
+            !circuits.values().all_equal()
+        })
+        .last()
+        .unwrap();
+
+    last_conn.0.x * last_conn.1.x
 }
 
 fn closest_pairs(i: &[Pos]) -> impl Iterator<Item = (&Pos, &Pos)> {
@@ -144,5 +159,10 @@ mod tests {
     #[test]
     fn test_part_1() {
         assert_eq!(part_1(&parse.parse(INPUT).unwrap(), 10), 40);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(&parse.parse(INPUT).unwrap()), 25272);
     }
 }
