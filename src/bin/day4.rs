@@ -39,11 +39,7 @@ fn part_2(rolls: &HashSet<Pos>) -> usize {
             break;
         }
 
-        to_check = removed
-            .iter()
-            .flat_map(|r| r.1.iter())
-            .copied()
-            .collect();
+        to_check = removed.iter().flat_map(|r| r.1.iter()).copied().collect();
         removed.iter().for_each(|(r, _)| {
             to_check.remove(r);
         });
