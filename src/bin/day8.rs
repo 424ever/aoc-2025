@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    fs::read_to_string,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::{collections::HashMap, fs::read_to_string};
 
 use itertools::Itertools;
 use winnow::{
@@ -18,9 +14,6 @@ struct Pos {
     z: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct CircuitId(usize);
-
 fn main() {
     let i = read_to_string("input/day8").unwrap();
     let i = parse.parse(&i).unwrap();
@@ -30,7 +23,7 @@ fn main() {
 }
 
 fn part_1(i: &[Pos], limit: usize) -> usize {
-    let mut circuits = HashMap::new();
+    let mut circuits = i.iter().enumerate().map(|(i, b)| (*b, i)).collect();
 
     closest_pairs(i).take(limit).for_each(|(p1, p2)| {
         connect(p1, p2, &mut circuits);
@@ -48,7 +41,7 @@ fn part_1(i: &[Pos], limit: usize) -> usize {
 }
 
 fn part_2(i: &[Pos]) -> u64 {
-    let mut circuits = i.iter().map(|p| (*p, CircuitId::new())).collect();
+    let mut circuits = i.iter().enumerate().map(|(i, b)| (*b, i)).collect();
 
     let last_conn = closest_pairs(i)
         .take_while_inclusive(|(p1, p2)| {
@@ -73,27 +66,11 @@ fn dist(p1: &Pos, p2: &Pos) -> u64 {
     p1.x.abs_diff(p2.x).pow(2) + p1.y.abs_diff(p2.y).pow(2) + p1.z.abs_diff(p2.z).pow(2)
 }
 
-fn connect(p1: &Pos, p2: &Pos, circuits: &mut HashMap<Pos, CircuitId>) {
-    let g1 = circuits.get(p1).cloned();
-    let g2 = circuits.get(p2).cloned();
-    match (g1, g2) {
-        (None, None) => {
-            let id = CircuitId::new();
-            circuits.insert(*p1, id.clone());
-            circuits.insert(*p2, id);
-        }
-        (None, Some(id2)) => {
-            circuits.insert(*p1, id2.clone());
-        }
-        (Some(id1), None) => {
-            circuits.insert(*p2, id1.clone());
-        }
-        (Some(id1), Some(id2)) if id1 == id2 => {}
-        (Some(id1), Some(id2)) => {
-            let rem = circuits.extract_if(|_, id| *id == id2).collect::<Vec<_>>();
-            circuits.extend(rem.iter().map(|(p, _)| (*p, id1.clone())));
-        }
-    }
+fn connect(p1: &Pos, p2: &Pos, circuits: &mut HashMap<Pos, usize>) {
+    let id1 = circuits.get(p1).cloned().unwrap();
+    let id2 = circuits.get(p2).cloned().unwrap();
+    let rem = circuits.extract_if(|_, id| *id == id2).collect::<Vec<_>>();
+    circuits.extend(rem.iter().map(|(p, _)| (*p, id1)));
 }
 
 fn parse(i: &mut &str) -> Result<Vec<Pos>> {
@@ -112,13 +89,6 @@ fn parse(i: &mut &str) -> Result<Vec<Pos>> {
         ),
     )
     .parse_next(i)
-}
-
-impl CircuitId {
-    pub fn new() -> Self {
-        static COUNTER: AtomicUsize = AtomicUsize::new(1);
-        Self(COUNTER.fetch_add(1, Ordering::Relaxed))
-    }
 }
 
 #[cfg(test)]
